@@ -1,115 +1,89 @@
 # Perspective Selection Reference
 
+## Approach
+
+Derive domain-specific perspectives from the topic context. Do not use generic archetypes like "Skeptic" or "Pragmatist" as role labels. Instead, generate role labels that a real team would have for the specific problem being discussed.
+
 ## Topic Analysis
 
-1. Extract domain keywords: technical terms, frameworks, constraint keywords (security, performance, cost, UX).
-2. Classify topic breadth:
-   - Narrow: single technology or specific implementation (3 perspectives)
-   - Medium: cross-functional decision (3-4 perspectives)
-   - Broad: strategic or organizational change (5 perspectives)
-3. Identify stakeholder angles: who implements, decides, uses, pays, maintains, secures.
-4. Map conflict points: speed vs quality, innovation vs stability, cost vs capability.
+1. Extract domain keywords: technologies, frameworks, systems, constraint terms (security, performance, cost, UX).
+2. Identify stakeholder angles: who implements, decides, uses, pays, maintains, secures.
+3. Map conflict points: speed vs quality, innovation vs stability, cost vs capability, build vs buy.
+4. Determine what domain expertise is needed to ground the discussion.
 
-## Archetypes
+## Structural Roles
 
-### Required (every debate)
+Two roles are always present to ensure debate mechanics work. Frame them in domain-specific terms.
 
-Contrarian
-- Challenges consensus and groupthink
-- Explores unconventional approaches
-- Questions unstated assumptions
+**Contrarian**
+- Challenges consensus and surfaces alternatives
+- Frame in domain terms: for a migration debate, this might be "Core Data Advocate" who argues against migrating. For a build-vs-buy debate, this might be "Open Source Advocate" who challenges the buy assumption.
+- The Contrarian's structural job is to prevent premature convergence. Its domain label should reflect the most productive opposing viewpoint for the specific topic.
 
-Synthesizer
-- Connects ideas across perspectives
-- Finds integration points beyond compromise
-- Clarifies misunderstandings between perspectives
+**Synthesizer**
+- Connects viewpoints and finds integration points beyond compromise
+- Frame in domain terms: might be "iOS Platform Engineer" who sees the full system, or "Technical Program Manager" who bridges perspectives.
+- The Synthesizer's structural job is to find higher-order understanding. Its domain label should reflect someone who naturally sees across the relevant domains.
 
-Specialist
-- Deep expertise in the relevant domain
-- Provides technical accuracy and grounding
-- Knows domain-specific context and constraints
+## Domain-Specific Roles
 
-### Additional
+The remaining 1-5 roles are derived entirely from the topic. For each, define:
+- Role label (what a real team would call this person)
+- Domain expertise (what they know deeply)
+- What they care about (their optimization criteria)
 
-Optimist
-- Focuses on opportunities and potential
-- Highlights benefits and positive outcomes
-- Risk: may underestimate challenges
+## Examples
 
-Skeptic
-- Questions assumptions and claims
-- Identifies risks and failure modes
-- Demands evidence
-- Risk: may block progress with over-caution
+### "Should we migrate from Core Data to SwiftData?"
 
-Pragmatist
-- Balances ideals with constraints
-- Focuses on what's achievable given resources and timelines
-- Risk: may settle for suboptimal solutions
+| Role | Domain | Cares about |
+|------|--------|-------------|
+| SwiftData Expert | New API, migration patterns, modern Apple data persistence | API capabilities, future direction |
+| Core Data Advocate (Contrarian) | Legacy system, hidden complexity, production stability | Regression risk, known edge cases |
+| Product Owner | Timeline, feature roadmap, user impact | Ship dates, feature parity during migration |
+| QA Lead | Test coverage, regression detection, CI/CD | Test strategy, migration validation |
+| iOS Platform Engineer (Synthesizer) | Full iOS stack, build systems, dependencies | System-wide coherence, migration path |
 
-Theorist
-- Emphasizes principles and best practices
-- Thinks long-term and systematically
-- Risk: may be disconnected from practical realities
+### "Build vs buy for notification system?"
 
-### Secondary Traits (combinable with any archetype)
+| Role | Domain | Cares about |
+|------|--------|-------------|
+| Backend Infrastructure Engineer | Distributed systems, message queues, reliability | Scalability, operational burden |
+| Product Manager | User engagement, notification UX, metrics | Delivery rates, user experience |
+| Security/Compliance Lead | Data handling, vendor audits, regulatory | PII in notifications, audit trail |
+| Vendor Evaluation Specialist | SaaS pricing, integration patterns, vendor lock-in | TCO, API quality, exit strategy |
+| DIY Advocate (Contrarian) | Custom systems, competitive differentiation | Over-dependence on vendors |
+| Technical Program Manager (Synthesizer) | Cross-team coordination, timelines | Feasibility, phased approach |
 
-- Data-driven: wants metrics, benchmarks, studies
-- User-centric: returns to end-user impact
-- Cost-conscious: calculates TCO, ROI
-- Risk-averse: prioritizes safety and reliability
-- Process-oriented: emphasizes methodology and governance
+### "Why is checkout dropping 30% at payment?"
 
-## Diversity Rules
+| Role | Domain | Cares about |
+|------|--------|-------------|
+| Payment Integration Engineer | Payment APIs, tokenization, error handling | API errors, timeout rates |
+| UX Researcher | User behavior, funnel analysis, usability testing | Drop-off patterns, friction points |
+| Frontend Performance Specialist | Load times, rendering, network requests | Page weight at payment step |
+| Baseline Skeptic (Contrarian) | Industry benchmarks, funnel norms | Whether 30% is actually abnormal |
 
-Requirements:
-- All 3 required archetypes present
-- No single archetype more than 30% of panel
-- At least 2 different knowledge domains for medium+ breadth topics
-- Perspectives should create productive tension, not just agreement
+### "Should we adopt a 4-day work week?"
 
-## Selection by Topic Type
+| Role | Domain | Cares about |
+|------|--------|-------------|
+| HR Operations Lead | Policy implementation, scheduling, compliance | Coverage gaps, overtime rules |
+| Engineering Manager | Team productivity, sprint planning, delivery | Output measurement, meeting density |
+| Customer Success Lead | Client coverage, response times, SLAs | Service continuity |
+| Employee Wellbeing Researcher | Burnout, cognitive performance, retention | Wellbeing outcomes, work intensification |
+| Status Quo Advocate (Contrarian) | Current operations, change risk | Disruption cost, competitive pressure |
+| COO (Synthesizer) | Organization-wide operations | Phased rollout, measurement framework |
 
-Narrow technical topics (e.g., "PostgreSQL JSONB vs separate tables"):
-- 2-3 specialists with different sub-domain focus
-- 1 contrarian/skeptic
-- Keep it tight; don't over-staff simple questions
+## Codex Perspective
 
-Cross-functional decisions (e.g., "Should we adopt microservices?"):
-- 1-2 specialists (different domains)
-- 1 skeptic or pragmatist
-- 1 synthesizer
-- Optional: business/cost perspective
+One perspective is always powered by Codex CLI (a different model family). The team lead assigns Codex to whichever role benefits most from independent reasoning — typically a Specialist role or the Contrarian, since model diversity is most valuable where genuine disagreement matters.
 
-Broad strategic topics (e.g., "Build vs buy CRM"):
-- 1-2 specialists
-- 1 strategic/theorist
-- 1 skeptic/contrarian
-- 1 synthesizer
-- 1 user/customer or business perspective
+The Codex perspective is a first-class team member. It is spawned as an Agent that relays prompts to `codex exec` via Bash. From the team lead's perspective, it is identical to any other agent.
 
-Bug analysis and debugging:
-- Specialist (in the relevant system area)
-- Skeptic (challenges initial assumptions about root cause)
-- Pragmatist (focuses on fix feasibility and risk)
+## Format Rules
 
-Feature design:
-- Specialist (technical feasibility)
-- User-centric perspective (user impact and experience)
-- Contrarian (challenges whether the feature is needed at all)
-
-## Format
-
-Always use archetype label only. Never assign names, titles, or fictional backgrounds.
-
-Good:
-```
-Skeptic: The migration timeline assumes zero regression, which contradicts our last three deployments.
-```
-
-Bad:
-```
-Dr. Sarah Chen (Security Architect): Well, I've been in security for 20 years, and I have to say...
-```
-
-Keep statements direct and analytical. No conversational filler, no "I think", no "in my experience as a...". Just the analysis.
+- Label by role only. No fictional names. No fictional titles like "Dr." or "Professor."
+- No personality descriptions. No communication style notes.
+- Keep statements direct and analytical. No "I think", no "in my experience as a...", no conversational filler.
+- Each perspective's output should be labeled with its role: `Payment Integration Engineer: [statement]`
