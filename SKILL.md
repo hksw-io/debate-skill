@@ -42,7 +42,7 @@ Use Glob, Grep, and Read to understand the project:
 
 ### High-impact questions
 
-After codebase exploration, **always** ask the user high-impact questions via AskUserQuestion before selecting perspectives. The right perspectives depend on understanding what the user actually cares about. Do not skip this step.
+After codebase exploration, evaluate whether there is enough context to select good perspectives. If there is — the topic is specific, the codebase provides clear context, and the desired outcome is obvious — proceed directly to perspective selection. If not, ask the user high-impact questions via AskUserQuestion before proceeding.
 
 Ask about:
 - **Desired outcome**: "What does a good result look like? A decision, a ranked list of options, a risk assessment?"
