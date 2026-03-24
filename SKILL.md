@@ -85,7 +85,14 @@ Actively ask questions to make sure the debate is working on the right thing. Qu
 
 **Team lead** asks the user directly via AskUserQuestion. This is the primary channel.
 
-**Perspective agents** can flag questions in their round output by prefixing with `[QUESTION FOR USER]:`. The team lead collects these after each round, batches them, and asks the user via AskUserQuestion before starting the next round.
+**Perspective agents** can include questions in their round output under a markdown header. The team lead scans agent outputs for this section, collects the questions, and asks the user via AskUserQuestion before starting the next round.
+
+Agent output format for questions:
+```
+# Open Questions
+1. Can you give an example of the quality issues you're seeing?
+2. Is the current Core Data schema the source of truth, or is it changing?
+```
 
 ### When to ask
 
@@ -162,7 +169,7 @@ Spawn one Agent per perspective role:
 > - **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
 > - **State your falsifiability.** For your key claims, state what evidence or outcome would change your mind.
 > - **Distinguish knowledge from assumption.** Be explicit about what you know vs what you're assuming.
-> - **Ask if unsure.** If you lack context needed for a well-grounded position, flag it with `[QUESTION FOR USER]: your question here`. The team lead will ask the user and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract.
+> - **Ask if unsure.** If you lack context needed for a well-grounded position, add an `# Open Questions` section at the end of your output with a numbered list of questions. The team lead will ask the user and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract.
 > - Be direct and analytical. No conversational filler.
 > - Label your output with your role name.
 > - Check TaskList for your assigned task and mark it complete when done.
@@ -183,9 +190,9 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 
 All agents are treated identically by the team lead:
 
-**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs. Before proceeding to synthesis, the team lead scans all outputs for `[QUESTION FOR USER]:` tags, batches them, asks the user via AskUserQuestion, and propagates answers to all agents. **Do not proceed to synthesis or Round 2 while questions are pending.**
+**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs. Before proceeding to synthesis, the team lead scans all outputs for `# Open Questions` sections, batches the questions, asks the user via AskUserQuestion, and propagates answers to all agents. **Do not proceed to synthesis or Round 2 while questions are pending.**
 
-**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `[QUESTION FOR USER]:` tags before proceeding.
+**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `# Open Questions` from agent outputs before proceeding.
 
 **Per-round synthesis:**
 
