@@ -79,14 +79,40 @@ No fictional names. No fictional backgrounds. No personality traits. Label by ro
 
 ## Clarifying Questions
 
-Before or between rounds, if the debate needs information to give a well-grounded analysis, use the AskUserQuestion tool.
+Actively ask questions to make sure the debate is working on the right thing. Questions can come from the team lead, from any perspective agent, or emerge during synthesis. **All questions must be resolved before proceeding to the next round.**
 
-Guidelines:
-- Ask when a key assumption would change the direction of the debate (e.g., team size, budget, timeline, existing constraints).
+### Who can ask
+
+**Team lead** asks the user directly via AskUserQuestion. This is the primary channel.
+
+**Perspective agents** can flag questions in their round output by prefixing with `[QUESTION FOR USER]:`. The team lead collects these after each round, batches them, and asks the user via AskUserQuestion before starting the next round.
+
+### When to ask
+
+- **Before Round 1**: If the topic is ambiguous, missing context, or could be interpreted multiple ways. Ask for examples, constraints, or the specific outcome the user is trying to achieve. Do not guess — ask.
+- **Between rounds**: If agents identify gaps in their analysis. For example, "We don't know the team size, which would change whether we recommend approach A or B."
+- **During synthesis**: If tensions cannot be resolved without user input on priorities or constraints.
+
+### What to ask about
+
+- **Missing context**: team size, budget, timeline, existing constraints, technical stack details
+- **Ambiguous scope**: "Are you asking about the migration itself or the long-term architecture?"
+- **Examples**: "Can you give an example of the kind of quality issue you're seeing?" or "What does a good outcome look like?"
+- **Priorities**: "The debate has a tension between speed and thoroughness. Which matters more for this decision?"
+- **Verification**: "We found X in the codebase. Is this the current state, or is it changing?"
+
+### How to ask
+
 - Batch related questions into a single AskUserQuestion call (up to 4 questions).
-- Phrase questions from the debate's perspective: "The debate needs to know your current deployment frequency to assess migration risk."
-- Propagate answers to all perspectives via SendMessage after receiving clarification.
-- Prefer reading codebase files over asking. Do not over-ask.
+- Phrase questions specifically: "The debate needs to know your current deployment frequency to assess migration risk" — not "Do you have any other context?"
+- Prefer reading codebase files over asking. Do not ask what you can look up.
+
+### Propagation
+
+After receiving answers, the team lead:
+1. Sends the user's answers to all perspective agents via SendMessage.
+2. Briefly summarizes: "User clarified: team is 8 engineers, deploys weekly, codebase is 3 years old."
+3. Only then proceeds to the next round. **Never start a round while questions are pending.**
 
 ## Codex Consultation
 
@@ -136,6 +162,7 @@ Spawn one Agent per perspective role:
 > - **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
 > - **State your falsifiability.** For your key claims, state what evidence or outcome would change your mind.
 > - **Distinguish knowledge from assumption.** Be explicit about what you know vs what you're assuming.
+> - **Ask if unsure.** If you lack context needed for a well-grounded position, flag it with `[QUESTION FOR USER]: your question here`. The team lead will ask the user and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract.
 > - Be direct and analytical. No conversational filler.
 > - Label your output with your role name.
 > - Check TaskList for your assigned task and mark it complete when done.
@@ -156,9 +183,9 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 
 All agents are treated identically by the team lead:
 
-**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs.
+**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs. Before proceeding to synthesis, the team lead scans all outputs for `[QUESTION FOR USER]:` tags, batches them, asks the user via AskUserQuestion, and propagates answers to all agents. **Do not proceed to synthesis or Round 2 while questions are pending.**
 
-**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?"
+**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `[QUESTION FOR USER]:` tags before proceeding.
 
 **Per-round synthesis:**
 
