@@ -40,12 +40,21 @@ Use Glob, Grep, and Read to understand the project:
 - **Relevant code**: If the topic references specific features, systems, or bugs, read the relevant source files. The team lead should understand the code under discussion before deciding who needs to debate it.
 - **Project docs**: Read CLAUDE.md, README, or any architecture docs if they exist. These often contain constraints and decisions that matter for the debate.
 
-### Topic clarification
+### High-impact questions
 
-If the topic is ambiguous or lacks context after codebase exploration, ask the user via AskUserQuestion before proceeding. Good questions at this stage:
-- "Can you give an example of what you mean by X?"
-- "Is this about the short-term fix or the long-term architecture?"
-- "What outcome would make this debate useful to you?"
+After codebase exploration, **always** ask the user high-impact questions via AskUserQuestion before selecting perspectives. The right perspectives depend on understanding what the user actually cares about. Do not skip this step.
+
+Ask about:
+- **Desired outcome**: "What does a good result look like? A decision, a ranked list of options, a risk assessment?"
+- **Constraints**: "Are there hard constraints the debate should respect? (timeline, budget, team size, technical debt limits, etc.)"
+- **Scope**: "Is this about the immediate fix, the long-term architecture, or both?"
+- **Examples**: "Can you give an example of what you mean by X?" — especially when the topic uses vague terms
+- **Stakeholders**: "Who else cares about this decision? Who would push back on a change?"
+- **Prior attempts**: "Has this been tried before? What happened?"
+
+Pick the 2-4 most impactful questions for this specific topic. Do not ask generic questions that the codebase already answers. Do not ask more than 4.
+
+The answers directly shape perspective selection — for example, if the user says "we tried this migration last year and rolled back," that warrants a perspective representing the lessons from that failure.
 
 ### Context summary
 
