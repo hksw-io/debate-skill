@@ -165,7 +165,7 @@ During Round 2+, any Claude perspective agent can request an ad-hoc Codex consul
 
 - Max 2 ad-hoc consultations per debate.
 - The requesting agent must state what it wants to learn and why.
-- Invoke via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto -c model_reasoning_effort="EFFORT" "PROMPT"`
+- Invoke via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto --skip-git-repo-check -c model_reasoning_effort="EFFORT" "PROMPT"`
 - Set reasoning effort based on the debate's complexity score (see reasoning effort table below).
 - Results are shared with all perspectives.
 
@@ -238,7 +238,7 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 > You do not reason about this topic yourself. Instead, for each round:
 > 1. Take your role description, the topic, the quality rules, and the full debate history
 > 2. Construct a prompt that captures all of this context
-> 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto -c model_reasoning_effort="EFFORT" 'PROMPT'`
+> 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto --skip-git-repo-check -c model_reasoning_effort="EFFORT" 'PROMPT'`
 >    where EFFORT is set by the team lead based on the complexity score (see table above).
 > 4. Return the Codex output as your position statement
 >
