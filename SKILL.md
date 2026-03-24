@@ -8,7 +8,7 @@ description: >
   consensus labels and actionable recommendations.
 license: MIT
 metadata:
-  version: "2.0"
+  version: "2.1"
 ---
 
 # Structured Debate
@@ -65,6 +65,14 @@ Derive **domain-specific perspectives from the topic context**, not generic arch
 - Who are the stakeholders? -> representatives for key groups (product owner, QA lead, etc.)
 - What constraints matter? -> perspectives focused on those (security, performance, cost, etc.)
 
+**Platform quality perspective:** When the codebase targets a specific platform, include a platform quality perspective. See [references/perspectives.md](references/perspectives.md) for details. Examples:
+- Apple/iOS/macOS projects: "Apple Platform Quality" — evaluates against Apple HIG, wording standards, animation polish, progressive disclosure, typographic attention
+- Microsoft/.NET/Windows projects: "Microsoft Platform Quality" — evaluates against Fluent Design, accessibility standards, enterprise UX patterns, inclusive design
+- Android projects: "Material Design Quality" — evaluates against Material Design guidelines, adaptive layouts, motion semantics
+- Web projects: "Web Standards Quality" — evaluates against WCAG, performance budgets, progressive enhancement
+
+This perspective is triggered by detecting the platform from the codebase (Xcode project files, .csproj, Android manifests, etc.) or from the topic itself.
+
 **One perspective is always powered by Codex CLI.** The team lead assigns it to whichever role fits best. This provides genuine model diversity — a different model family reasoning about the same problem.
 
 No fictional names. No fictional backgrounds. No personality traits. Label by role only.
@@ -101,7 +109,7 @@ Use TeamCreate with name `debate-{topic-slug}`.
 
 Use TaskCreate to create round tasks:
 - `round-1-opening`: each perspective states opening position
-- `round-2-response`: each perspective responds to others
+- `round-2-response`: each perspective responds to others (focused on specific tensions from Round 1 synthesis)
 - Additional round tasks as needed based on depth
 
 ### Step 3: Spawn perspective agents
@@ -120,19 +128,24 @@ Spawn one Agent per perspective role:
 > Round [N] instructions: [STATE OPENING POSITION / RESPOND TO OTHERS]
 >
 > [For Round 2+: Here are all perspectives from the previous round: ...]
+> [For Round 2+: The synthesis identified these key tensions to address: ...]
 >
-> Rules:
+> Quality rules:
+> - **Ground your claims.** Before stating your position, search the codebase for relevant code, configs, tests, or docs using Read and Grep. Cite specific files and lines when they support your argument. If you cannot find evidence, say so.
+> - **Tag your evidence.** Mark each claim as: [grounded] if verified in code/docs, [informed] if based on domain knowledge, or [speculative] if uncertain.
+> - **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
+> - **State your falsifiability.** For your key claims, state what evidence or outcome would change your mind.
+> - **Distinguish knowledge from assumption.** Be explicit about what you know vs what you're assuming.
 > - Be direct and analytical. No conversational filler.
 > - Label your output with your role name.
-> - You may read codebase files if relevant to grounding your analysis.
 > - Check TaskList for your assigned task and mark it complete when done.
 
 **Codex perspective agent prompt template:**
 
-Same role/topic/round information as any other agent, plus this instruction:
+Same role/topic/round information and quality rules as any other agent, plus this instruction:
 
 > You do not reason about this topic yourself. Instead, for each round:
-> 1. Take your role description, the topic, and any prior round statements
+> 1. Take your role description, the topic, the quality rules, and any prior round statements
 > 2. Construct a prompt that captures all of this context
 > 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto 'PROMPT'`
 > 4. Return the Codex output as your position statement
@@ -145,17 +158,20 @@ All agents are treated identically by the team lead:
 
 **Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs.
 
-**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, asks them to respond. All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?"
+**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?"
 
-**Per-round synthesis (by team lead):**
+**Per-round synthesis:**
 
-After collecting all round outputs, the team lead produces:
+After collecting all round outputs, the team lead first asks the Synthesizer agent to produce a draft synthesis. The Synthesizer should identify agreements, tensions, and integration points from its independent perspective. The team lead then refines the Synthesizer's draft into the final per-round synthesis:
 
 - Agreements: where perspectives converge, noting same vs different reasoning
 - Tensions: specific disagreements categorized as factual, values-based, methodological, or scope
 - Open questions: what remains unresolved and what would resolve it
 - Emerging insights: novel understanding not present in any single perspective
+- Surprise finding: the single most non-obvious or unexpected insight from this round — something the user likely didn't consider when posing the question
+- Evidence quality: note which claims are grounded (verified in code), informed (domain knowledge), or speculative
 - Codex consultations: if used this round, what was asked and learned
+- Claude vs Codex divergence: if the Codex perspective diverged meaningfully from Claude perspectives, note where and why — this cross-model disagreement is often the most interesting signal
 
 Convergence rule: end early if all agree or cycling. Extend if major tension unexplored.
 
@@ -192,6 +208,9 @@ Note which perspective was Codex-powered (different model family).
 ### Summary
 1-2 sentences directly answering the question.
 
+### Decision
+If the topic is a decision (most are): "If you must decide now, do X because Y." One clear recommendation with the primary justification. This is not a hedge — commit to the position best supported by the debate. If the debate is genuinely contested, say so and state the tiebreaker criteria.
+
 ### Perspectives
 List the roles that participated and which was Codex-powered.
 
@@ -200,6 +219,21 @@ Numbered list with consensus label for each.
 
 ### Key Trade-offs
 For each: the trade-off, the recommendation, any dissent.
+
+### Surprise Finding
+The single most non-obvious or unexpected insight from the debate — something the user likely didn't consider when posing the question. This is often the most valuable output.
+
+### Strongest Dissent
+Steelman the best minority argument. Present the strongest version of the dissenting view, who held it, and under what conditions it would be the right choice. Do not dismiss it — the minority view often contains the most valuable signal.
+
+### Claude vs Codex
+Where the Codex-powered perspective diverged from Claude perspectives. What does cross-model disagreement reveal about the certainty of the conclusions?
+
+### Evidence Quality
+Summary of how well-grounded the debate's claims are:
+- Grounded claims (verified in code/docs): list key ones
+- Informed claims (domain knowledge): list key ones
+- Speculative claims (uncertain): list key ones and what would verify them
 
 ### Recommendations
 Concrete, actionable items. Group by time horizon if relevant (immediate, short-term, ongoing).

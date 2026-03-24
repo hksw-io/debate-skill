@@ -29,6 +29,19 @@ Open questions: Must point to specific unknowns, suggest concrete resolution pat
 
 Emerging insights: Look for hidden assumptions made explicit, reframings of the problem, novel combinations of perspectives, and contextual boundaries where different positions apply.
 
+Surprise finding: After completing the synthesis, identify the single most non-obvious or unexpected insight from this round. Ask: "What would the user not have considered when they posed this question?" The surprise finding is often the most valuable output of the debate — it justifies the cost of running multiple agents.
+
+Evidence quality: Track the grounding of claims across perspectives:
+- [grounded]: verified in code, docs, configs, or test results — cite the file and line
+- [informed]: based on domain knowledge or established best practices — state the source
+- [speculative]: uncertain or assumed — state what would verify it
+If a round's claims are mostly speculative, flag this and consider directing agents to do more codebase research in the next round.
+
+Claude vs Codex divergence: When the Codex-powered perspective reaches a different conclusion than the Claude perspectives, this is a high-value signal. Note:
+- What specifically diverged (conclusion, reasoning, evidence cited)
+- Whether the divergence reveals a genuine uncertainty or a model-specific bias
+- Whether it changes the confidence level of the consensus
+
 ## Consensus Labels
 
 UNANIMOUS: All perspectives agree on conclusion and reasoning. High confidence.
@@ -72,6 +85,33 @@ Bad: "It depends on your situation."
 Good: "The answer depends on three factors: [factor 1], [factor 2], [factor 3]. If [condition], then [recommendation]. If [other condition], then [other recommendation]."
 
 When possible, provide a decision matrix mapping factor combinations to recommendations with confidence levels.
+
+## Dissent Preservation
+
+The minority view often contains the most valuable signal. When the debate produces a majority or strong consensus, the synthesis must steelman the strongest dissenting argument:
+
+1. State the dissenting position in its strongest possible form — better than the dissenter stated it themselves if possible.
+2. Identify the conditions under which the dissent would be correct.
+3. Name the specific risk of ignoring the dissent.
+
+Do not dismiss dissent with "while this is a valid concern..." followed by moving on. If a dissent has merit under specific conditions, those conditions must be in the final report.
+
+Dissent is especially valuable when:
+- It comes from the Codex perspective (cross-model disagreement)
+- It identifies a risk that the majority is systematically underweighting
+- It reframes the question in a way the majority hasn't considered
+
+## Synthesizer Agent Role in Synthesis
+
+The Synthesizer agent (one of the two structural roles) produces a draft synthesis after each round. The team lead then refines it. This matters because:
+- The Synthesizer has reasoned independently about the topic — its synthesis reflects genuine understanding, not just aggregation
+- The team lead can check the Synthesizer's draft against the raw agent outputs to catch any blind spots
+- If the Synthesizer and team lead disagree on the synthesis, that itself is an insight worth noting
+
+Process:
+1. After collecting all round outputs, send them to the Synthesizer agent with: "Produce a draft synthesis: agreements, tensions, open questions, emerging insights, and your surprise finding."
+2. The Synthesizer returns its draft.
+3. The team lead refines the draft into the final per-round synthesis, noting any adjustments.
 
 ## Anti-Patterns
 

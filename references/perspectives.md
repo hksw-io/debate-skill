@@ -75,6 +75,67 @@ The remaining 1-5 roles are derived entirely from the topic. For each, define:
 | Status Quo Advocate (Contrarian) | Current operations, change risk | Disruption cost, competitive pressure |
 | COO (Synthesizer) | Organization-wide operations | Phased rollout, measurement framework |
 
+## Platform Quality Perspective
+
+When the codebase or topic targets a specific platform, include a platform quality perspective. This role evaluates the debate's proposals and recommendations against the platform's design ethos and quality standards.
+
+Detect the platform from:
+- Codebase files: .xcodeproj/.xcworkspace (Apple), .csproj/.sln (Microsoft), AndroidManifest.xml (Android), package.json with web frameworks (Web)
+- The topic itself: mentions of iOS, macOS, SwiftUI, .NET, Android, React, etc.
+
+### Apple Platform Quality
+
+Role label: "Apple Platform Quality"
+
+Evaluates against:
+- Human Interface Guidelines (HIG): layout, navigation, controls, system integration
+- Wording and copy: Apple's tone — concise, helpful, no jargon, sentence case, specific verbs
+- Visual polish: spacing, alignment, typography hierarchy, SF Symbols usage, animation timing
+- Progressive disclosure: showing the right information at the right time, not overwhelming users
+- Platform integration: using system features (Spotlight, Shortcuts, Widgets, ShareSheet) where appropriate
+- Accessibility: VoiceOver, Dynamic Type, color contrast, motion sensitivity
+
+Cares about: does this feel like it belongs on an Apple platform? Would Apple's design review team approve this?
+
+### Microsoft Platform Quality
+
+Role label: "Microsoft Platform Quality"
+
+Evaluates against:
+- Fluent Design System: depth, motion, material, scale, light
+- Accessibility: WCAG AA minimum, high contrast themes, narrator support, keyboard navigation
+- Enterprise UX: information density, bulk operations, discoverability for power users
+- Inclusive design: designing for permanent, temporary, and situational disabilities
+- Platform conventions: command bar patterns, pane navigation, settings paradigms
+
+Cares about: does this meet enterprise-grade quality? Is it accessible and inclusive by default?
+
+### Material Design Quality (Android)
+
+Role label: "Material Design Quality"
+
+Evaluates against:
+- Material Design 3: dynamic color, typography scale, shape system
+- Adaptive layouts: phone, tablet, foldable, large screen
+- Motion semantics: container transforms, shared axis, fade through
+- System integration: notifications, widgets, app actions
+- Accessibility: TalkBack, Switch Access, font scaling
+
+Cares about: does this follow Material conventions and adapt across form factors?
+
+### Web Standards Quality
+
+Role label: "Web Standards Quality"
+
+Evaluates against:
+- WCAG 2.1 AA compliance
+- Performance budgets: Core Web Vitals (LCP, INP, CLS)
+- Progressive enhancement: works without JavaScript, enhanced with it
+- Responsive design: mobile-first, fluid typography, container queries
+- Semantic HTML: proper heading hierarchy, landmarks, ARIA when needed
+
+Cares about: is this accessible, performant, and progressively enhanced?
+
 ## Codex Perspective
 
 One perspective is always powered by Codex CLI (a different model family). The team lead assigns Codex to whichever role benefits most from independent reasoning — typically a Specialist role or the Contrarian, since model diversity is most valuable where genuine disagreement matters.
