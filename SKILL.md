@@ -165,7 +165,8 @@ During Round 2+, any Claude perspective agent can request an ad-hoc Codex consul
 
 - Max 2 ad-hoc consultations per debate.
 - The requesting agent must state what it wants to learn and why.
-- Invoke via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto "PROMPT"`
+- Invoke via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto -c model_reasoning_effort="EFFORT" "PROMPT"`
+- Set reasoning effort based on the debate's complexity score (see reasoning effort table below).
 - Results are shared with all perspectives.
 
 ## Team Execution
@@ -200,8 +201,14 @@ Spawn one Agent per perspective role:
 >
 > Round [N] instructions: [STATE OPENING POSITION / RESPOND TO OTHERS]
 >
-> [For Round 2+: Here are all perspectives from the previous round: ...]
-> [For Round 2+: The synthesis identified these key tensions to address: ...]
+> [For Round 2+: Full debate history follows — all prior rounds, not just the last one]
+> [Round 1 positions: all perspectives' opening statements]
+> [Round 1 synthesis: agreements, tensions, insights]
+> [User clarifications: any answers from the user between rounds]
+> [Round 2 positions: ...] (if Round 3+)
+> [Round 2 synthesis: ...] (if Round 3+)
+> [Codex consultation results: ...] (if any were used)
+> [Key tensions to address this round: ...]
 >
 > Quality rules:
 > - **Ground your claims.** Before stating your position, search the codebase for relevant code, configs, tests, or docs using Read and Grep. Cite specific files and lines when they support your argument. If you cannot find evidence, say so.
@@ -214,14 +221,25 @@ Spawn one Agent per perspective role:
 > - Label your output with your role name.
 > - Check TaskList for your assigned task and mark it complete when done.
 
+**Codex reasoning effort table:**
+
+The team lead always sets reasoning effort for every Codex invocation (both the Codex perspective agent and ad-hoc consultations). This is not optional.
+
+| Complexity Score | Reasoning Effort |
+|-----------------|-----------------|
+| 5-7 (simple) | medium |
+| 8-11 (standard) | high |
+| 12-15 (deep) | xhigh |
+
 **Codex perspective agent prompt template:**
 
 Same role/topic/round information and quality rules as any other agent, plus this instruction:
 
 > You do not reason about this topic yourself. Instead, for each round:
-> 1. Take your role description, the topic, the quality rules, and any prior round statements
+> 1. Take your role description, the topic, the quality rules, and the full debate history
 > 2. Construct a prompt that captures all of this context
-> 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto 'PROMPT'`
+> 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto -c model_reasoning_effort="EFFORT" 'PROMPT'`
+>    where EFFORT is set by the team lead based on the complexity score (see table above).
 > 4. Return the Codex output as your position statement
 >
 > You are a relay between the debate and Codex CLI. Participate in the task list and messaging like any other agent.
@@ -232,7 +250,7 @@ All agents are treated identically by the team lead:
 
 **Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs. Before proceeding to synthesis, the team lead scans all outputs for `# Open Questions` sections, batches the questions, asks the user via AskUserQuestion, and propagates answers to all agents. **Do not proceed to synthesis or Round 2 while questions are pending.**
 
-**Round 2+ (Antithesis):** Team lead sends all positions to each agent via SendMessage, **along with the specific tensions identified in the synthesis**. Agents are directed to address these tensions rather than broadly "respond to others." All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `# Open Questions` from agent outputs before proceeding.
+**Round 2+ (Antithesis):** Team lead sends each agent the **full cumulative debate history** via SendMessage — all prior rounds' positions, all syntheses, all user clarifications, all Codex consultation results — plus the specific tensions to address this round. Agents are directed to address these tensions rather than broadly "respond to others." This is especially critical for the Codex agent, which is stateless (each `codex exec` is a fresh invocation and has no memory of prior rounds). All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `# Open Questions` from agent outputs before proceeding.
 
 **Per-round synthesis:**
 
