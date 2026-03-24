@@ -1,45 +1,49 @@
 # debate-skill
 
-A Claude Code skill for structured multi-perspective analysis using Hegelian dialectic. Spawns a team of independent agents — each with a domain-specific role — to debate a topic. One perspective is always powered by Codex CLI for genuine model diversity.
-
-## Install
+Multi-perspective analysis powered by a team of independent agents. One is always Codex (different model family) for genuine diversity.
 
 ```
 claude skill install hksw-io/debate-skill
 ```
 
-## Prerequisites
+## Quick start
 
-- Codex CLI installed (`/opt/homebrew/bin/codex`) for the Codex perspective
-- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in Claude Code settings
-
-## Usage
-
-```
+```sh
 /debate Should we migrate from REST to GraphQL?
-/debate size:5 depth:deep Build vs buy for our notification system
-/debate Why is the checkout flow dropping 30% of users at payment?
+/debate size:5 depth:deep Build vs buy for notifications
+/debate Why is checkout dropping 30% at payment?
 ```
 
-## What it does
+## Arguments
 
-1. Scores topic complexity (5-15) to determine panel size and depth
-2. Derives domain-specific perspective roles from the topic (not generic archetypes)
-3. Spawns a team of independent agents — one per perspective, working in parallel
-4. One perspective is always powered by Codex CLI (different model family)
-5. Runs structured debate rounds: thesis, antithesis, synthesis
-6. May ask clarifying questions if the debate needs context from you
-7. Claude agents can also request ad-hoc Codex consultations mid-debate
-8. Produces a final report with consensus labels, trade-offs, and actionable recommendations
-9. Cleans up the team when done
+| Arg | Example | Description |
+|-----|---------|-------------|
+| `size:N` | `size:5` | Panel size (3-7) |
+| `depth:X` | `depth:deep` | quick (1 round), standard (2-3), deep (4+) |
+| *(rest)* | `Should we migrate?` | Topic (required) |
 
-## Key design decisions
+## What happens
 
-- **Always spawns a team** — if you invoked `/debate`, you want a real debate with independent reasoning
-- **Domain-specific roles** — "SwiftData Expert" and "QA Lead" instead of generic "Specialist" and "Skeptic"
-- **Codex as first-class team member** — spawned as an Agent like everyone else, participates in task list and messaging
-- **No fictional characters** — role labels only, direct analytical tone
-- **Plain text output** — no box-drawing characters, no emoji
+1. **Context** — explores codebase, asks high-impact questions if needed
+2. **Complexity** — scores topic (5-15), sets panel size and Codex reasoning effort
+3. **Perspectives** — derives domain-specific roles from topic (e.g., "SwiftData Expert", "QA Lead", "Product Owner"), not generic archetypes
+4. **Team** — spawns one agent per perspective, all working in parallel
+5. **Rounds** — thesis → antithesis → synthesis, with full history passed each round
+6. **Report** — consensus labels, decision, trade-offs, surprise finding, strongest dissent, evidence quality
+
+## Design
+
+- **Always a team** — independent agents, not one model playing all roles
+- **Codex is a first-class member** — same task list, messaging, and coordination as Claude agents
+- **Domain roles** — "Core Data Advocate" not "Contrarian"
+- **Platform quality** — auto-detects Apple/Microsoft/Android/Web and adds a platform-native quality perspective
+- **Cumulative context** — every round gets full debate history, critical for stateless Codex agent
+- **Evidence tagging** — claims are tagged [grounded], [informed], or [speculative]
+
+## Requirements
+
+- [Codex CLI](https://github.com/openai/codex) installed
+- `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in Claude Code settings
 
 ## License
 
