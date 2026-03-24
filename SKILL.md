@@ -25,8 +25,37 @@ Parse `$ARGUMENTS`:
 ## Flow
 
 ```
-COMPLEXITY_CHECK -> PERSPECTIVE_SELECTION -> TEAM_SETUP -> PARALLEL_ROUNDS -> SYNTHESIS -> REPORT -> CLEANUP
+CONTEXT_GATHERING -> COMPLEXITY_CHECK -> PERSPECTIVE_SELECTION -> TEAM_SETUP -> PARALLEL_ROUNDS -> SYNTHESIS -> REPORT -> CLEANUP
 ```
+
+## Context Gathering
+
+Before scoring complexity or selecting perspectives, the team lead must build an understanding of the project and topic. This context directly informs which perspectives to bring into the debate.
+
+### Codebase exploration
+
+Use Glob, Grep, and Read to understand the project:
+- **Platform detection**: Look for .xcodeproj/.xcworkspace (Apple), .csproj/.sln (Microsoft), AndroidManifest.xml (Android), package.json (Web). This determines whether to include a platform quality perspective.
+- **Tech stack**: Read project config files, dependency manifests, and top-level source directories to understand what technologies are in play.
+- **Relevant code**: If the topic references specific features, systems, or bugs, read the relevant source files. The team lead should understand the code under discussion before deciding who needs to debate it.
+- **Project docs**: Read CLAUDE.md, README, or any architecture docs if they exist. These often contain constraints and decisions that matter for the debate.
+
+### Topic clarification
+
+If the topic is ambiguous or lacks context after codebase exploration, ask the user via AskUserQuestion before proceeding. Good questions at this stage:
+- "Can you give an example of what you mean by X?"
+- "Is this about the short-term fix or the long-term architecture?"
+- "What outcome would make this debate useful to you?"
+
+### Context summary
+
+After gathering context, the team lead produces a brief context summary (not shown to the user — this is internal). It should capture:
+- Platform and tech stack
+- Relevant files and code areas
+- Key constraints or decisions already made
+- What the user is trying to achieve
+
+This summary is included in every perspective agent's prompt so they start with shared context rather than having to rediscover it independently.
 
 ## Complexity Check
 
@@ -157,6 +186,8 @@ Spawn one Agent per perspective role:
 > You are the [ROLE] in a structured debate about: [TOPIC]
 >
 > Your expertise: [DOMAIN DESCRIPTION]
+>
+> Project context: [CONTEXT SUMMARY — platform, tech stack, relevant files, key constraints, what the user is trying to achieve]
 >
 > Round [N] instructions: [STATE OPENING POSITION / RESPOND TO OTHERS]
 >
