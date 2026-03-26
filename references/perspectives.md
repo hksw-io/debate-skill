@@ -140,7 +140,7 @@ Cares about: is this accessible, performant, and progressively enhanced?
 
 One perspective is always powered by Codex CLI (a different model family). The team lead assigns Codex to whichever role benefits most from independent reasoning — typically a Specialist role or the Contrarian, since model diversity is most valuable where genuine disagreement matters.
 
-The Codex perspective is a first-class team member. It is spawned as an Agent that relays prompts to `codex exec` via Bash. From the team lead's perspective, it is identical to any other agent.
+The Codex perspective is a first-class team member. It is spawned as an Agent that invokes the `codex` skill via the Skill tool. From the team lead's perspective, it is identical to any other agent.
 
 ## Format Rules
 

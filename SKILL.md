@@ -165,7 +165,7 @@ During Round 2+, any Claude perspective agent can request an ad-hoc Codex consul
 
 - Max 2 ad-hoc consultations per debate.
 - The requesting agent must state what it wants to learn and why.
-- Invoke via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto --skip-git-repo-check -c model_reasoning_effort="EFFORT" "PROMPT"`
+- Invoke via the Skill tool: `skill: "codex", args: "reasoning:EFFORT PROMPT"`
 - Set reasoning effort based on the debate's complexity score (see reasoning effort table below).
 - Results are shared with all perspectives.
 
@@ -216,7 +216,7 @@ Spawn one Agent per perspective role:
 > - **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
 > - **State your falsifiability.** For your key claims, state what evidence or outcome would change your mind.
 > - **Distinguish knowledge from assumption.** Be explicit about what you know vs what you're assuming.
-> - **Ask if unsure.** If you lack context needed for a well-grounded position, add an `# Open Questions` section at the end of your output with a numbered list of questions. The team lead will ask the user and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract.
+> - **Ask if unsure — this is mandatory, not optional.** If you lack context needed for a well-grounded position, you MUST add an `# Open Questions` section at the end of your output with a numbered list of questions. The team lead will ask the user via AskUserQuestion and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract. The debate process guarantees your questions will reach the user — use this channel. **IMPORTANT: Do NOT call AskUserQuestion yourself. Only the team lead calls AskUserQuestion. You communicate questions by including them in your output text under `# Open Questions`.** Calling AskUserQuestion from a teammate agent requires team lead approval and will deadlock the debate.
 > - Be direct and analytical. No conversational filler.
 > - Label your output with your role name.
 > - Check TaskList for your assigned task and mark it complete when done.
@@ -238,7 +238,7 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 > You do not reason about this topic yourself. Instead, for each round:
 > 1. Take your role description, the topic, the quality rules, and the full debate history
 > 2. Construct a prompt that captures all of this context
-> 3. Run it via Bash: `/opt/homebrew/bin/codex exec -s read-only --full-auto --skip-git-repo-check -c model_reasoning_effort="EFFORT" 'PROMPT'`
+> 3. Invoke it via the Skill tool: `skill: "codex", args: "reasoning:EFFORT PROMPT"`
 >    where EFFORT is set by the team lead based on the complexity score (see table above).
 > 4. Return the Codex output as your position statement
 >
@@ -248,9 +248,22 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 
 All agents are treated identically by the team lead:
 
-**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs. Before proceeding to synthesis, the team lead scans all outputs for `# Open Questions` sections, batches the questions, asks the user via AskUserQuestion, and propagates answers to all agents. **Do not proceed to synthesis or Round 2 while questions are pending.**
+**Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs, then follows the **mandatory open questions check** below before proceeding.
 
-**Round 2+ (Antithesis):** Team lead sends each agent the **full cumulative debate history** via SendMessage — all prior rounds' positions, all syntheses, all user clarifications, all Codex consultation results — plus the specific tensions to address this round. Agents are directed to address these tensions rather than broadly "respond to others." This is especially critical for the Codex agent, which is stateless (each `codex exec` is a fresh invocation and has no memory of prior rounds). All agents work in parallel. Before synthesis, the Contrarian is asked: "What are we missing?" Again, collect and resolve any `# Open Questions` from agent outputs before proceeding.
+**Round 2+ (Antithesis):** Team lead sends each agent the **full cumulative debate history** via SendMessage — all prior rounds' positions, all syntheses, all user clarifications, all Codex consultation results — plus the specific tensions to address this round. Agents are directed to address these tensions rather than broadly "respond to others." This is especially critical for the Codex agent, which is stateless (each `codex exec` is a fresh invocation and has no memory of prior rounds). All agents work in parallel. After collecting outputs, follow the **mandatory open questions check** below before proceeding.
+
+### Mandatory open questions check (after EVERY round)
+
+**This step is NOT optional.** After collecting all agent outputs for a round, the team lead MUST:
+
+1. **Scan every agent output** for an `# Open Questions` section (or any questions embedded in the text that the agent flags as needing user input).
+2. **If any open questions exist:**
+   a. Batch them into a single AskUserQuestion call (up to 4 questions per call, multiple calls if needed).
+   b. **STOP and WAIT for the user's answer.** Do not proceed to synthesis or the next round.
+   c. After receiving the answer, propagate it to all agents via SendMessage before continuing.
+3. **If no open questions exist:** Proceed to synthesis / next round.
+
+**CRITICAL: Do not skip this step even if the questions seem minor or answerable from context.** The agents asked because they lacked confidence — let the user decide. Skipping this step undermines the debate's grounding and can lead to speculative conclusions that the user could have corrected.
 
 **Per-round synthesis:**
 
