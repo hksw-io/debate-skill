@@ -8,7 +8,7 @@ description: >
   consensus labels and actionable recommendations.
 license: MIT
 metadata:
-  version: "2.1"
+  version: "3.0"
 ---
 
 # Structured Debate
@@ -33,6 +33,8 @@ CONTEXT_GATHERING -> COMPLEXITY_CHECK -> PERSPECTIVE_SELECTION -> TEAM_SETUP -> 
 Before scoring complexity or selecting perspectives, the team lead must build an understanding of the project and topic. This context directly informs which perspectives to bring into the debate.
 
 ### Codebase exploration
+
+If the topic is not about code (e.g., organizational decisions, strategy, hiring, process), skip codebase exploration. Proceed directly to high-impact questions. The rest of the debate flow applies unchanged.
 
 Use Glob, Grep, and Read to understand the project:
 - **Platform detection**: Look for .xcodeproj/.xcworkspace (Apple), .csproj/.sln (Microsoft), AndroidManifest.xml (Android), package.json (Web). This determines whether to include a platform quality perspective.
@@ -68,23 +70,21 @@ This summary is included in every perspective agent's prompt so they start with 
 
 ## Complexity Check
 
-Score the topic on 5 dimensions (1-3 each):
+Score the topic on 3 dimensions (1-3 each):
 
 | Dimension | 1 (Low) | 2 (Medium) | 3 (High) |
 |-----------|---------|------------|----------|
-| Stakeholders | Single group | 2-3 groups | 4+ groups |
-| Trade-offs | Clear winner | 1-2 trade-offs | 3+ trade-offs |
-| Time horizon | Immediate only | Months | Years |
-| Reversibility | Easily reversed | Partially | Irreversible |
+| Trade-offs | Clear winner | 1-2 trade-offs | 3+ competing trade-offs |
+| Reversibility | Easily reversed | Partially reversible | Irreversible or very costly |
 | Domain breadth | Single domain | 2 domains | 3+ domains |
 
-Total = sum (range 5-15).
+Total = sum (range 3-9).
 
 | Score | Action |
 |-------|--------|
-| 5-7 | Warn: topic may be simple. If user proceeds: 3 perspectives, 1-2 rounds |
-| 8-11 | Standard: 3-5 perspectives, 2 rounds |
-| 12-15 | Deep: 5-7 perspectives, 3+ rounds. Load all reference files. |
+| 3-4 | Warn: topic may be simple. If user proceeds: 3 perspectives, 1-2 rounds |
+| 5-6 | Standard: 3-5 perspectives, 2 rounds |
+| 7-9 | Deep: 5-7 perspectives, 3+ rounds. Load all reference files. |
 
 Override panel size with `size:N`.
 
@@ -117,40 +117,35 @@ No fictional names. No fictional backgrounds. No personality traits. Label by ro
 
 ## Clarifying Questions
 
-Actively ask questions to make sure the debate is working on the right thing. Questions can come from the team lead, from any perspective agent, or emerge during synthesis. **All questions must be resolved before proceeding to the next round.**
+Questions can come from the team lead (during context gathering) or from perspective agents (during rounds). **All material questions must be resolved before proceeding to the next round.**
 
-### Who can ask
+### Team lead questions
 
-**Team lead** asks the user directly via AskUserQuestion. This is the primary channel.
+The team lead asks the user directly via AskUserQuestion during context gathering if the topic is ambiguous or missing context. Prefer reading codebase files over asking — do not ask what you can look up.
 
-**Perspective agents** can include questions in their round output under a markdown header. The team lead scans agent outputs for this section, collects the questions, and asks the user via AskUserQuestion before starting the next round.
+### Agent questions (structured format)
 
-Agent output format for questions:
+Perspective agents communicate questions by including a `# Questions for User` section at the end of their output. Every agent MUST include this section, even when they have no questions.
+
+**Format when agent has questions:**
 ```
-# Open Questions
-1. Can you give an example of the quality issues you're seeing?
-2. Is the current Core Data schema the source of truth, or is it changing?
+# Questions for User
+
+1. [QUESTION] Can the database schema be modified, or is it shared with other services?
+   [WHY] My position on migration risk depends on whether schema changes are possible.
+   [ASSUME_IF_NO_ANSWER] Schema is shared and cannot be modified.
+
+2. [QUESTION] What is the team's experience with SwiftData?
+   [WHY] This affects whether I recommend a phased migration or a full rewrite.
+   [ASSUME_IF_NO_ANSWER] Team has no prior SwiftData experience.
 ```
 
-### When to ask
+**Format when agent has no questions:**
+```
+# Questions for User
 
-- **Before Round 1**: If the topic is ambiguous, missing context, or could be interpreted multiple ways. Ask for examples, constraints, or the specific outcome the user is trying to achieve. Do not guess — ask.
-- **Between rounds**: If agents identify gaps in their analysis. For example, "We don't know the team size, which would change whether we recommend approach A or B."
-- **During synthesis**: If tensions cannot be resolved without user input on priorities or constraints.
-
-### What to ask about
-
-- **Missing context**: team size, budget, timeline, existing constraints, technical stack details
-- **Ambiguous scope**: "Are you asking about the migration itself or the long-term architecture?"
-- **Examples**: "Can you give an example of the kind of quality issue you're seeing?" or "What does a good outcome look like?"
-- **Priorities**: "The debate has a tension between speed and thoroughness. Which matters more for this decision?"
-- **Verification**: "We found X in the codebase. Is this the current state, or is it changing?"
-
-### How to ask
-
-- Batch related questions into a single AskUserQuestion call (up to 4 questions).
-- Phrase questions specifically: "The debate needs to know your current deployment frequency to assess migration risk" — not "Do you have any other context?"
-- Prefer reading codebase files over asking. Do not ask what you can look up.
+NONE
+```
 
 ### Propagation
 
@@ -201,25 +196,21 @@ Spawn one Agent per perspective role:
 >
 > Round [N] instructions: [STATE OPENING POSITION / RESPOND TO OTHERS]
 >
-> [For Round 2+: Full debate history follows — all prior rounds, not just the last one]
+> [For Round 2+: Full cumulative debate history follows — all prior rounds, not just the last one]
 > [Round 1 positions: all perspectives' opening statements]
-> [Round 1 synthesis: agreements, tensions, insights]
+> [Round 1 synthesis: agreements, tensions, surprise finding, directions]
 > [User clarifications: any answers from the user between rounds]
 > [Round 2 positions: ...] (if Round 3+)
 > [Round 2 synthesis: ...] (if Round 3+)
+> [For Round 3+: Summarize Round 1 positions to 2-3 sentences each. Include Round 2+ in full.]
 > [Codex consultation results: ...] (if any were used)
 > [Key tensions to address this round: ...]
 >
 > Quality rules:
-> - **Ground your claims.** Before stating your position, search the codebase for relevant code, configs, tests, or docs using Read and Grep. Cite specific files and lines when they support your argument. If you cannot find evidence, say so.
-> - **Tag your evidence.** Mark each claim as: [grounded] if verified in code/docs, [informed] if based on domain knowledge, or [speculative] if uncertain.
-> - **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
-> - **State your falsifiability.** For your key claims, state what evidence or outcome would change your mind.
-> - **Distinguish knowledge from assumption.** Be explicit about what you know vs what you're assuming.
-> - **Ask if unsure — this is mandatory, not optional.** If you lack context needed for a well-grounded position, you MUST add an `# Open Questions` section at the end of your output with a numbered list of questions. The team lead will ask the user via AskUserQuestion and share the answer before the next round. Do not guess when you can ask. Ask for examples if the topic is abstract. The debate process guarantees your questions will reach the user — use this channel. **IMPORTANT: Do NOT call AskUserQuestion yourself. Only the team lead calls AskUserQuestion. You communicate questions by including them in your output text under `# Open Questions`.** Calling AskUserQuestion from a teammate agent requires team lead approval and will deadlock the debate.
-> - Be direct and analytical. No conversational filler.
-> - Label your output with your role name.
-> - Check TaskList for your assigned task and mark it complete when done.
+> 1. **Ground and tag.** Search the codebase for relevant code, configs, tests, or docs using Read and Grep. Cite specific files and lines. Tag each claim: [grounded] if verified in code/docs, [informed] if based on domain knowledge, [speculative] if uncertain — state what would verify it. If you cannot find evidence, say so.
+> 2. **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
+> 3. **Ask if unsure.** If you lack context for a well-grounded position, you MUST add a `# Questions for User` section at the end of your output using the structured format (see Clarifying Questions section). State what you know vs assume. If you have no questions, end with `# Questions for User` followed by `NONE`. **Do NOT call AskUserQuestion yourself — only the team lead does. Calling it from a teammate agent will deadlock the debate.**
+> 4. **Be direct.** No conversational filler. Label output with your role name. Check TaskList and mark your task complete when done.
 
 **Codex reasoning effort table:**
 
@@ -227,9 +218,9 @@ The team lead always sets reasoning effort for every Codex invocation (both the 
 
 | Complexity Score | Reasoning Effort |
 |-----------------|-----------------|
-| 5-7 (simple) | medium |
-| 8-11 (standard) | high |
-| 12-15 (deep) | xhigh |
+| 3-4 (simple) | medium |
+| 5-6 (standard) | high |
+| 7-9 (deep) | xhigh |
 
 **Codex perspective agent prompt template:**
 
@@ -237,10 +228,11 @@ Same role/topic/round information and quality rules as any other agent, plus thi
 
 > You do not reason about this topic yourself. Instead, for each round:
 > 1. Take your role description, the topic, the quality rules, and the full debate history
-> 2. Construct a prompt that captures all of this context
+> 2. Construct a single prompt that includes: (a) your role and what you care about, (b) the topic, (c) the 4 quality rules, (d) the full debate history from prior rounds, and (e) the specific tensions to address this round. Structure the prompt so Codex can act on it without needing additional context. Do not send multiple prompts — one comprehensive prompt per round.
 > 3. Invoke it via the Skill tool: `skill: "codex", args: "reasoning:EFFORT PROMPT"`
 >    where EFFORT is set by the team lead based on the complexity score (see table above).
 > 4. Return the Codex output as your position statement
+> 5. Your output must end with a `# Questions for User` section. Parse Codex's output for any questions and include them in the structured format. If Codex asked none, output `# Questions for User` followed by `NONE`.
 >
 > You are a relay between the debate and Codex CLI. Participate in the task list and messaging like any other agent.
 
@@ -250,33 +242,33 @@ All agents are treated identically by the team lead:
 
 **Round 1 (Thesis):** All agents work their opening position task in parallel. Team lead collects all outputs, then follows the **mandatory open questions check** below before proceeding.
 
-**Round 2+ (Antithesis):** Team lead sends each agent the **full cumulative debate history** via SendMessage — all prior rounds' positions, all syntheses, all user clarifications, all Codex consultation results — plus the specific tensions to address this round. Agents are directed to address these tensions rather than broadly "respond to others." This is especially critical for the Codex agent, which is stateless (each `codex exec` is a fresh invocation and has no memory of prior rounds). All agents work in parallel. After collecting outputs, follow the **mandatory open questions check** below before proceeding.
+**Round 2+ (Antithesis):** Team lead sends each agent the **full cumulative debate history** via SendMessage — all prior rounds' positions, all syntheses, all user clarifications, all Codex consultation results — plus the specific tensions to address this round. Agents are directed to address these tensions rather than broadly "respond to others." This is especially critical for the Codex agent, which is stateless (each `codex exec` is a fresh invocation and has no memory of prior rounds). All agents work in parallel. After collecting outputs, follow the **mandatory questions check** below before proceeding.
 
-### Mandatory open questions check (after EVERY round)
+**Agent failure:** If an agent fails to respond or produces an error, note the gap in the synthesis and proceed with the remaining perspectives. Do not retry more than once.
 
-**This step is NOT optional.** After collecting all agent outputs for a round, the team lead MUST:
+### Mandatory questions check (after EVERY round)
 
-1. **Scan every agent output** for an `# Open Questions` section (or any questions embedded in the text that the agent flags as needing user input).
-2. **If any open questions exist:**
-   a. Batch them into a single AskUserQuestion call (up to 4 questions per call, multiple calls if needed).
+**This step is NOT optional.** After collecting all agent outputs for a round, the team lead MUST execute this protocol:
+
+1. **Scan every agent output** for the `# Questions for User` section.
+   - If any agent's output lacks this section entirely, send that agent a follow-up message: "Your output is missing the `# Questions for User` section. Reply with your questions or `NONE`." Wait for the response before proceeding.
+2. **Collect all non-NONE questions** into a single numbered list with attribution (which agent asked).
+3. **Apply materiality filter.** For each question, apply the counterfactual test: "If the user gave the opposite answer, would it change the debate's recommendation?" Drop questions that fail this test.
+4. **If material questions remain:**
+   a. Batch into AskUserQuestion calls (up to 4 questions per call, multiple calls if needed). **MUST use AskUserQuestion tool — do not ask questions via text output.**
    b. **STOP and WAIT for the user's answer.** Do not proceed to synthesis or the next round.
-   c. After receiving the answer, propagate it to all agents via SendMessage before continuing.
-3. **If no open questions exist:** Proceed to synthesis / next round.
-
-**CRITICAL: Do not skip this step even if the questions seem minor or answerable from context.** The agents asked because they lacked confidence — let the user decide. Skipping this step undermines the debate's grounding and can lead to speculative conclusions that the user could have corrected.
+   c. After receiving answers, propagate to all agents via SendMessage before continuing.
+   d. If the user declines to answer a specific question, use the agent's [ASSUME_IF_NO_ANSWER] and propagate that assumption.
+5. **If no material questions remain:** Proceed to synthesis / next round.
 
 **Per-round synthesis:**
 
 After collecting all round outputs, the team lead first asks the Synthesizer agent to produce a draft synthesis. The Synthesizer should identify agreements, tensions, and integration points from its independent perspective. The team lead then refines the Synthesizer's draft into the final per-round synthesis:
 
-- Agreements: where perspectives converge, noting same vs different reasoning
-- Tensions: specific disagreements categorized as factual, values-based, methodological, or scope
-- Open questions: what remains unresolved and what would resolve it
-- Emerging insights: novel understanding not present in any single perspective
-- Surprise finding: the single most non-obvious or unexpected insight from this round — something the user likely didn't consider when posing the question
-- Evidence quality: note which claims are grounded (verified in code), informed (domain knowledge), or speculative
-- Codex consultations: if used this round, what was asked and learned
-- Claude vs Codex divergence: if the Codex perspective diverged meaningfully from Claude perspectives, note where and why — this cross-model disagreement is often the most interesting signal
+- **Agreements**: where perspectives converge, noting same vs different reasoning. When an agreement reveals a novel insight not present in any single perspective, note it here.
+- **Tensions**: specific disagreements categorized as factual, values-based, methodological, or scope. Note when a tension stems from grounded vs speculative claims.
+- **Surprise finding**: the single most non-obvious or unexpected insight from this round — something the user likely didn't consider. If the surprise comes from Codex diverging from Claude perspectives, say so.
+- **Directions for next round**: what tensions to explore, what evidence to gather, any Codex consultations to request.
 
 Convergence rule: end early if all agree or cycling. Extend if major tension unexplored.
 
@@ -297,10 +289,7 @@ Consensus labels:
 - CONTESTED: Fundamental disagreement remains
 - CONTEXT-DEPENDENT: Different answers for different contexts, with specific decision criteria
 
-Weight by confidence x domain relevance:
-- High confidence + Core domain: 1.0
-- Medium confidence + Adjacent domain: 0.49
-- Low confidence + Outside domain: 0.16
+Weight perspectives by relevance to the specific sub-question. On a technical question about SwiftData migration, weight the SwiftData Expert highest. On a question about ship timeline, weight the Product Owner highest. Always explain why a particular perspective's view carries more weight on a given point. Discount speculative claims from perspectives operating outside their domain.
 
 Never produce: "Both make valid points" or "It depends" without specifying decision factors.
 
@@ -308,43 +297,27 @@ Never produce: "Both make valid points" or "It depends" without specifying decis
 
 Plain text with markdown headers where helpful. No box-drawing characters, no emoji, no decorative formatting.
 
-Note which perspective was Codex-powered (different model family).
-
-### Summary
-1-2 sentences directly answering the question.
+**Core sections (always present):**
 
 ### Decision
-If the topic is a decision (most are): "If you must decide now, do X because Y." One clear recommendation with the primary justification. This is not a hedge — commit to the position best supported by the debate. If the debate is genuinely contested, say so and state the tiebreaker criteria.
-
-### Perspectives
-List the roles that participated and which was Codex-powered.
-
-### Consensus Points
-Numbered list with consensus label for each.
+"If you must decide now, do X because Y." One clear recommendation with the primary justification. This is not a hedge — commit to the position best supported by the debate. If the debate is genuinely contested, say so and state the tiebreaker criteria. Note which perspectives participated and which was Codex-powered (different model family).
 
 ### Key Trade-offs
-For each: the trade-off, the recommendation, any dissent.
-
-### Surprise Finding
-The single most non-obvious or unexpected insight from the debate — something the user likely didn't consider when posing the question. This is often the most valuable output.
-
-### Strongest Dissent
-Steelman the best minority argument. Present the strongest version of the dissenting view, who held it, and under what conditions it would be the right choice. Do not dismiss it — the minority view often contains the most valuable signal.
-
-### Claude vs Codex
-Where the Codex-powered perspective diverged from Claude perspectives. What does cross-model disagreement reveal about the certainty of the conclusions?
-
-### Evidence Quality
-Summary of how well-grounded the debate's claims are:
-- Grounded claims (verified in code/docs): list key ones
-- Informed claims (domain knowledge): list key ones
-- Speculative claims (uncertain): list key ones and what would verify them
+For each trade-off: the trade-off, the recommendation, any dissent, and a consensus label (UNANIMOUS / STRONG / MAJORITY / CONTESTED / CONTEXT-DEPENDENT). Inline the label rather than listing consensus points separately.
 
 ### Recommendations
 Concrete, actionable items. Group by time horizon if relevant (immediate, short-term, ongoing).
 
-### Open Questions
-What remains unresolved and how to resolve it.
+### Open Questions / Next Steps
+What remains unresolved, how to resolve it, and what the user should investigate next.
 
-### Confidence Assessment
-What the debate is confident about and what requires further investigation.
+**Conditional sections (include only when substantive):**
+
+### Surprise Finding
+Include if the debate produced a non-obvious insight the user likely did not consider. Omit if nothing genuinely surprising emerged — do not manufacture one.
+
+### Strongest Dissent
+Include if there was meaningful minority disagreement. Steelman it: present the strongest version of the dissenting view, who held it, and under what conditions it would be the right choice. Omit if consensus was unanimous and no dissent had merit.
+
+### Cross-Model Divergence
+Include if the Codex-powered perspective diverged meaningfully from Claude perspectives. What does the disagreement reveal about certainty? Omit if Codex and Claude agreed.

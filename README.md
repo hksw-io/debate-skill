@@ -24,12 +24,12 @@ claude skill install hksw-io/debate-skill
 
 ## What happens
 
-1. **Context** — explores codebase, asks high-impact questions if needed
-2. **Complexity** — scores topic (5-15), sets panel size and Codex reasoning effort
+1. **Context** — explores codebase (or skips for non-code topics), asks high-impact questions if needed
+2. **Complexity** — scores topic on 3 dimensions (3-9), sets panel size and Codex reasoning effort
 3. **Perspectives** — derives domain-specific roles from topic (e.g., "SwiftData Expert", "QA Lead", "Product Owner"), not generic archetypes
 4. **Team** — spawns one agent per perspective, all working in parallel
-5. **Rounds** — thesis → antithesis → synthesis, with full history passed each round
-6. **Report** — consensus labels, decision, trade-offs, surprise finding, strongest dissent, evidence quality
+5. **Rounds** — thesis -> antithesis -> synthesis, with full history passed each round
+6. **Report** — decision, key trade-offs with consensus labels, recommendations, open questions (+ conditional: surprise finding, strongest dissent, cross-model divergence)
 
 ## Design
 
@@ -38,7 +38,8 @@ claude skill install hksw-io/debate-skill
 - **Domain roles** — "Core Data Advocate" not "Contrarian"
 - **Platform quality** — auto-detects Apple/Microsoft/Android/Web and adds a platform-native quality perspective
 - **Cumulative context** — every round gets full debate history, critical for stateless Codex agent
-- **Evidence tagging** — claims are tagged [grounded], [informed], or [speculative]
+- **Evidence tagging** — claims tagged [grounded], [informed], or [speculative]
+- **Mandatory question enforcement** — agent questions surfaced to user via AskUserQuestion, not silently skipped
 
 ## Requirements
 

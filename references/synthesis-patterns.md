@@ -16,31 +16,20 @@ Key principles:
 
 After each round, produce four categories:
 
-Agreements: Explicit (same conclusion and reasoning) or implicit (same conclusion, different reasoning paths). Tag implicit agreements as convergent -- they strengthen confidence when multiple domains validate the same point.
+**Agreements:** Explicit (same conclusion and reasoning) or implicit (same conclusion, different reasoning paths). Tag implicit agreements as convergent — they strengthen confidence when multiple domains validate the same point. When an agreement reveals a novel insight not present in any single perspective, note it here.
 
-Tensions: Categorize each disagreement:
+**Tensions:** Categorize each disagreement:
 - Factual: different empirical claims or predictions. Resolution: identify evidence that would settle it.
 - Values-based: different optimization criteria or stakeholder priorities. Resolution: make trade-offs explicit.
 - Definitional: different meanings for key terms. Resolution: standardize or acknowledge multiple framings.
 - Methodological: different approaches to the same problem. Resolution: identify contexts where each excels.
 - Scope: different problem boundaries. Resolution: explicitly define scope.
 
-Open questions: Must point to specific unknowns, suggest concrete resolution paths, and be necessary for progress. Template: "To resolve [tension], we need to determine [specific unknown]. This could be answered by [concrete action]."
+Note when a tension stems from grounded vs speculative claims — a factual disagreement where one side has [grounded] evidence and the other has [speculative] claims is weighted differently than one where both sides are grounded.
 
-Emerging insights: Look for hidden assumptions made explicit, reframings of the problem, novel combinations of perspectives, and contextual boundaries where different positions apply.
+**Surprise finding:** The single most non-obvious or unexpected insight from this round. Ask: "What would the user not have considered when they posed this question?" If the surprise comes from Codex diverging from Claude perspectives, say so. The surprise finding is often the most valuable output of the debate — it justifies the cost of running multiple agents.
 
-Surprise finding: After completing the synthesis, identify the single most non-obvious or unexpected insight from this round. Ask: "What would the user not have considered when they posed this question?" The surprise finding is often the most valuable output of the debate — it justifies the cost of running multiple agents.
-
-Evidence quality: Track the grounding of claims across perspectives:
-- [grounded]: verified in code, docs, configs, or test results — cite the file and line
-- [informed]: based on domain knowledge or established best practices — state the source
-- [speculative]: uncertain or assumed — state what would verify it
-If a round's claims are mostly speculative, flag this and consider directing agents to do more codebase research in the next round.
-
-Claude vs Codex divergence: When the Codex-powered perspective reaches a different conclusion than the Claude perspectives, this is a high-value signal. Note:
-- What specifically diverged (conclusion, reasoning, evidence cited)
-- Whether the divergence reveals a genuine uncertainty or a model-specific bias
-- Whether it changes the confidence level of the consensus
+**Directions for next round:** What tensions to explore, what evidence to gather, any Codex consultations to request. Forward-looking guidance, not backward-looking summary. Template: "In the next round, [Agent] should address [specific tension] by [concrete action]."
 
 ## Consensus Labels
 
@@ -60,10 +49,7 @@ When perspective relevance varies by sub-question, weight accordingly:
 
 On sub-question A where Specialist has core domain expertise, weight their view highest. On sub-question B where Pragmatist's operational knowledge dominates, weight theirs. Always explain why a particular perspective's view is weighted higher on a given point.
 
-Confidence x domain relevance weighting:
-- High confidence + Core domain: 1.0
-- Medium confidence + Adjacent domain: 0.49
-- Low confidence + Outside domain: 0.16
+Weight perspectives by relevance to the specific sub-question. A specialist's view on their core domain should dominate over an adjacent domain's opinion, which in turn should dominate over out-of-domain speculation. Discount speculative claims from perspectives operating outside their domain. Always explain why a particular perspective is weighted higher on a given point.
 
 ## Handling Unresolved Tensions
 
@@ -109,7 +95,7 @@ The Synthesizer agent (one of the two structural roles) produces a draft synthes
 - If the Synthesizer and team lead disagree on the synthesis, that itself is an insight worth noting
 
 Process:
-1. After collecting all round outputs, send them to the Synthesizer agent with: "Produce a draft synthesis: agreements, tensions, open questions, emerging insights, and your surprise finding."
+1. After collecting all round outputs, send them to the Synthesizer agent with: "Produce a draft synthesis: agreements, tensions, surprise finding, and directions for next round."
 2. The Synthesizer returns its draft.
 3. The team lead refines the draft into the final per-round synthesis, noting any adjustments.
 
