@@ -211,6 +211,8 @@ Spawn one Agent per perspective role:
 > 2. **Steelman before attacking.** When disagreeing with another perspective, first state the strongest version of their argument, then explain why you still disagree.
 > 3. **Ask if unsure.** If you lack context for a well-grounded position, you MUST add a `# Questions for User` section at the end of your output using the structured format (see Clarifying Questions section). State what you know vs assume. If you have no questions, end with `# Questions for User` followed by `NONE`. **Do NOT call AskUserQuestion yourself — only the team lead does. Calling it from a teammate agent will deadlock the debate.**
 > 4. **Be direct.** No conversational filler. Label output with your role name. Check TaskList and mark your task complete when done.
+>
+> For software engineering topics, prefer current APIs and modern approaches over deprecated or legacy ones — search results often surface outdated patterns.
 
 **Codex reasoning effort table:**
 
